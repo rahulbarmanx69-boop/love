@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel 🔐 — Will You Date Me?</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Reuse main styles (has admin-specific classes too) -->
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body { margin: 0; padding: 0; }
+  </style>
+</head>
+<body class="admin-body">
+
+<div class="admin-container">
+
+  <!-- ── Login Form ───────────────────────────────────── -->
+  <div id="login-section">
+    <div class="login-card">
+      <h2>🔐 Admin Login</h2>
+      <p>Enter the secret password to manage photos</p>
+
+      <input
+        type="password"
+        id="admin-pwd-input"
+        class="admin-input"
+        placeholder="Enter password..."
+        autofocus
+        onkeydown="if(event.key==='Enter') adminLogin()"
+      />
+      <p id="login-error" class="error-msg"></p>
+      <button class="btn-admin" onclick="adminLogin()">Login 💖</button>
+    </div>
+  </div>
+
+  <!-- ── Admin Panel (shown after login) ──────────────── -->
+  <div id="admin-panel" class="admin-panel">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+      <div>
+        <h1 class="admin-title">🛠️ Admin Panel</h1>
+        <p class="admin-sub">Manage your memory gallery</p>
+      </div>
+      <button class="logout-btn" onclick="adminLogout()">Logout</button>
+    </div>
+
+    <!-- ── Upload Section ──────────────────────────────── -->
+    <div class="admin-section">
+      <h3>📤 Upload Photos</h3>
+      <p>Upload photos to appear in the gallery. Supports JPG, PNG, GIF, WEBP.</p>
+
+      <!-- Drop zone -->
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <span>📸</span>
+        <p>Click to choose photos or drag & drop here</p>
+      </div>
+
+      <!-- Hidden file input -->
+      <input
+        type="file"
+        id="file-input"
+        class="file-input"
+        accept="image/*"
+        multiple
+        onchange="previewFiles(this.files)"
+      />
+
+      <!-- Preview thumbnails -->
+      <div id="upload-preview" class="upload-preview"></div>
+
+      <!-- Upload button -->
+      <button class="btn-admin" id="upload-btn" onclick="uploadPhotos()" style="display:none;">
+        Upload 💕
+      </button>
+
+      <!-- Progress / status message -->
+      <p id="upload-progress" class="upload-progress"></p>
+    </div>
+
+    <!-- ── Current Photos Section ──────────────────────── -->
+    <div class="admin-section">
+      <h3>🖼️ Current Photos</h3>
+      <p>Click the ✕ button on any photo to delete it from the gallery and Cloudinary.</p>
+
+      <div id="admin-photo-list" class="admin-photo-list">
+        <!-- Injected by JS -->
+      </div>
+
+      <p id="admin-loading" style="color:rgba(255,182,193,0.5); text-align:center; padding:20px;">
+        Loading photos...
+      </p>
+    </div>
+
+  </div><!-- /admin-panel -->
+</div>
+
+<script>
+// ============================================================
+// admin.js — inline script for the admin panel
+// ============================================================
+
+// ── State ─────────────────────────────────────────────────
+let adminPassword = '';       // Stored after login
+let selectedFiles = [];       // Files chosen for upload
+
+// ══════════════════════════════════════════════════════════
+// LOGIN / LOGOUT
+// ══════════════════════════════════════════════════════════
+async function adminLogin() {
+  const input  = document.getElementById('admin-pwd-input');
+  const errEl  = document.getElementById('login-error');
+  const pwd    = input.value.trim();
+  if (!pwd) { errEl.textContent = 'Please enter a password'; return; }
+
+  try {
+    const res  = await fetch('/api/admin/login', {
+      method  : 'POST',
+      headers : { 'Content-Type': 'application/json' },
+      body    : JSON.stringify({ password: pwd }),
+    });
+
+    if (res.ok) {
+      adminPassword = pwd;
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('admin-panel').classList.add('visible');
+      loadAdminPhotos();
+    } else {
+      errEl.textContent = '❌ Wrong password. Try again!';
+      input.value = '';
+      input.focus();
+    }
+  } catch (err) {
+    errEl.textContent = 'Server error. Is the server running?';
+  }
+}
+
+function adminLogout() {
+  adminPassword = '';
+  location.reload();
+}
+
+// ══════════════════════════════════════════════════════════
+// FILE PREVIEW
+// ══════════════════════════════════════════════════════════
+function previewFiles(files) {
+  selectedFiles = Array.from(files);
+  const preview  = document.getElementById('upload-preview');
+  const uploadBtn = document.getElementById('upload-btn');
+  preview.innerHTML = '';
+
+  if (selectedFiles.length === 0) {
+    uploadBtn.style.display = 'none';
+    return;
+  }
+
+  selectedFiles.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'preview-thumb';
+      img.alt = file.name;
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  uploadBtn.style.display = 'block';
+  document.getElementById('upload-progress').textContent =
+    `${selectedFiles.length} file(s) selected`;
+}
+
+// ── Drag & Drop ───────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('drag-over');
+});
+
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('drag-over');
+});
+
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const files = e.dataTransfer.files;
+  previewFiles(files);
+});
+
+// ══════════════════════════════════════════════════════════
+// UPLOAD
+// ══════════════════════════════════════════════════════════
+async function uploadPhotos() {
+  if (selectedFiles.length === 0) return;
+
+  const progressEl = document.getElementById('upload-progress');
+  const uploadBtn  = document.getElementById('upload-btn');
+
+  uploadBtn.disabled       = true;
+  uploadBtn.textContent    = 'Uploading... ⏳';
+  progressEl.textContent   = 'Uploading to Cloudinary... please wait 💕';
+
+  const formData = new FormData();
+  selectedFiles.forEach(f => formData.append('photos', f));
+
+  try {
+    const res  = await fetch('/api/photos', {
+      method  : 'POST',
+      headers : { 'x-admin-password': adminPassword },
+      body    : formData,
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      progressEl.textContent = `✅ ${data.photos.length} photo(s) uploaded successfully! 💖`;
+      document.getElementById('upload-preview').innerHTML = '';
+      document.getElementById('file-input').value = '';
+      selectedFiles = [];
+      uploadBtn.style.display = 'none';
+      loadAdminPhotos(); // Refresh the list
+    } else {
+      progressEl.textContent = `❌ Upload failed: ${data.error}`;
+    }
+  } catch (err) {
+    progressEl.textContent = `❌ Error: ${err.message}`;
+  } finally {
+    uploadBtn.disabled    = false;
+    uploadBtn.textContent = 'Upload 💕';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// LOAD PHOTOS (admin view)
+// ══════════════════════════════════════════════════════════
+async function loadAdminPhotos() {
+  const listEl   = document.getElementById('admin-photo-list');
+  const loadEl   = document.getElementById('admin-loading');
+
+  listEl.innerHTML = '';
+  loadEl.style.display = 'block';
+
+  try {
+    const res    = await fetch('/api/photos');
+    const photos = await res.json();
+
+    loadEl.style.display = 'none';
+
+    if (!photos || photos.length === 0) {
+      listEl.innerHTML = '<p class="no-photos-msg">No photos yet. Upload some! 📸</p>';
+      return;
+    }
+
+    photos.forEach(photo => {
+      const card = document.createElement('div');
+      card.className = 'admin-photo-card';
+      card.id = `card-${photo.id}`;
+
+      const img = document.createElement('img');
+      img.src   = photo.url;
+      img.alt   = 'Gallery photo';
+      img.loading = 'lazy';
+
+      const delBtn = document.createElement('button');
+      delBtn.className   = 'delete-btn';
+      delBtn.textContent = '✕';
+      delBtn.title       = 'Delete this photo';
+      delBtn.onclick     = () => deletePhoto(photo.public_id || photo.id, card);
+
+      card.appendChild(img);
+      card.appendChild(delBtn);
+      listEl.appendChild(card);
+    });
+
+  } catch (err) {
+    loadEl.textContent = 'Failed to load photos.';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// DELETE PHOTO
+// ══════════════════════════════════════════════════════════
+async function deletePhoto(publicId, cardEl) {
+  if (!confirm('Delete this photo from the gallery and Cloudinary? This cannot be undone!')) return;
+
+  try {
+    const encodedId = encodeURIComponent(publicId);
+    const res = await fetch(`/api/photos/${encodedId}`, {
+      method  : 'DELETE',
+      headers : { 'x-admin-password': adminPassword },
+    });
+
+    if (res.ok) {
+      // Animate removal
+      cardEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      cardEl.style.opacity    = '0';
+      cardEl.style.transform  = 'scale(0.85)';
+      setTimeout(() => cardEl.remove(), 320);
+    } else {
+      const data = await res.json();
+      alert(`Delete failed: ${data.error}`);
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Date Me? 💕</title>
+  <meta name="description" content="A cute romantic question just for you, Sona 💕" />
+
+  <!-- Google Fonts: Handwriting + Clean UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     BACKGROUND MUSIC (plays on all pages)
+══════════════════════════════════════════════ -->
+<audio id="bg-music" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg" />
+</audio>
+
+<!-- Floating music toggle (visible on landing page) -->
+<button id="landing-music-btn" class="landing-music-btn" onclick="toggleMute()" aria-label="Toggle music">
+  🎵
+</button>
+
+<!-- ══════════════════════════════════════════════
+     FLOATING HEARTS BACKGROUND (landing only)
+══════════════════════════════════════════════ -->
+<div id="hearts-bg" class="hearts-container" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 1 — LANDING
+══════════════════════════════════════════════ -->
+<section id="landing-page" class="page active">
+
+  <!-- Sparkle decoration -->
+  <div class="sparkle-ring" aria-hidden="true">
+    <span>✨</span><span>💫</span><span>⭐</span><span>💫</span><span>✨</span>
+  </div>
+
+  <!-- Photos + heading row -->
+  <div class="profile-row">
+
+    <!-- Left profile: Me (the guy sending this) -->
+    <div class="profile-card left-card">
+      <div class="profile-frame">
+        <!-- Replace me.jpg in /public folder with your own photo! -->
+        <img src="me.jpg" alt="Me 💙" class="profile-img" id="img-me"
+             onerror="this.src='placeholder-boy.svg'" />
+      </div>
+      <p class="profile-label">Me 💙</p>
+    </div>
+
+    <!-- Center: animated heart connector -->
+    <div class="heart-connector" aria-hidden="true">
+      <span class="connect-heart beating">💗</span>
+    </div>
+
+    <!-- Right profile: Sona (the partner) -->
+    <div class="profile-card right-card">
+      <div class="profile-frame">
+        <!-- Replace partner.jpg in /public folder with partner's photo! -->
+        <img src="partner.jpg" alt="Sona 💖" class="profile-img" id="img-partner"
+             onerror="this.src='placeholder-girl.svg'" />
+      </div>
+      <p class="profile-label">Sona 💖</p>
+    </div>
+  </div>
+
+  <!-- Main heading -->
+  <div class="heading-block">
+    <h1 class="main-heading">Are you miss me?</h1>
+    <p class="sub-heading">I miss you too and I really love you sona 💕</p>
+    <p class="question-text">Will you go on a date with me? 🌸</p>
+  </div>
+
+  <!-- Yes / No buttons -->
+  <div class="btn-row" id="btn-row">
+    <button id="btn-yes" class="btn btn-yes" onclick="onYes()">
+      Yes! 💖
+    </button>
+    <button id="btn-no" class="btn btn-no">
+      No 😢
+    </button>
+  </div>
+
+  <!-- Fun hint text (appears after No dodges a few times) -->
+  <p id="hint-text" class="hint-text" aria-live="polite"></p>
+
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CELEBRATION OVERLAY (shown on Yes click)
+══════════════════════════════════════════════ -->
+<div id="celebration-overlay" class="celebration-overlay hidden" aria-hidden="true">
+  <div class="celebrate-content">
+    <!-- Kissing pandas SVG illustration -->
+    <div class="panda-scene">
+      <!-- Left Panda -->
+      <svg class="panda panda-left" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Body -->
+        <ellipse cx="60" cy="110" rx="38" ry="44" fill="#fff" stroke="#222" stroke-width="2"/>
+        <!-- Belly -->
+        <ellipse cx="60" cy="118" rx="22" ry="26" fill="#f0e6e6"/>
+        <!-- Left ear -->
+        <circle cx="28" cy="48" r="16" fill="#333"/>
+        <circle cx="28" cy="48" r="9" fill="#555"/>
+        <!-- Right ear -->
+        <circle cx="92" cy="48" r="16" fill="#333"/>
+        <circle cx="92" cy="48" r="9" fill="#555"/>
+        <!-- Head -->
+        <ellipse cx="60" cy="68" rx="40" ry="36" fill="#fff" stroke="#222" stroke-width="2"/>
+        <!-- Eye patches -->
+        <ellipse cx="44" cy="62" rx="12" ry="10" fill="#333"/>
+        <ellipse cx="76" cy="62" rx="12" ry="10" fill="#333"/>
+        <!-- Eyes (shiny) -->
+        <circle cx="44" cy="63" r="5" fill="#fff"/>
+        <circle cx="76" cy="63" r="5" fill="#fff"/>
+        <circle cx="45" cy="62" r="3" fill="#111"/>
+        <circle cx="77" cy="62" r="3" fill="#111"/>
+        <circle cx="46" cy="61" r="1" fill="#fff"/>
+        <circle cx="78" cy="61" r="1" fill="#fff"/>
+        <!-- Nose -->
+        <ellipse cx="60" cy="77" rx="7" ry="5" fill="#f8a4c0"/>
+        <!-- Mouth (happy smile angled toward right panda) -->
+        <path d="M54 83 Q60 91 72 85" stroke="#555" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Blush -->
+        <ellipse cx="35" cy="80" rx="9" ry="6" fill="#ffb6c1" opacity="0.6"/>
+        <!-- Left arm reaching out toward right -->
+        <ellipse cx="95" cy="105" rx="10" ry="24" fill="#fff" stroke="#222" stroke-width="1.5" transform="rotate(-30 95 105)"/>
+        <!-- Right arm down -->
+        <ellipse cx="25" cy="105" rx="10" ry="22" fill="#fff" stroke="#222" stroke-width="1.5" transform="rotate(20 25 105)"/>
+        <!-- Legs -->
+        <ellipse cx="44" cy="148" rx="14" ry="12" fill="#fff" stroke="#222" stroke-width="1.5"/>
+        <ellipse cx="76" cy="148" rx="14" ry="12" fill="#fff" stroke="#222" stroke-width="1.5"/>
+        <!-- Paw pads on feet -->
+        <circle cx="44" cy="150" r="4" fill="#f8a4c0"/>
+        <circle cx="76" cy="150" r="4" fill="#f8a4c0"/>
+      </svg>
+
+      <!-- Heart between pandas -->
+      <div class="kiss-heart">💋</div>
+
+      <!-- Right Panda (leaning for kiss) -->
+      <svg class="panda panda-right" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Body -->
+        <ellipse cx="60" cy="110" rx="38" ry="44" fill="#fff" stroke="#222" stroke-width="2"/>
+        <!-- Belly -->
+        <ellipse cx="60" cy="118" rx="22" ry="26" fill="#ffe6f0"/>
+        <!-- Left ear -->
+        <circle cx="28" cy="48" r="16" fill="#333"/>
+        <circle cx="28" cy="48" r="9" fill="#555"/>
+        <!-- Right ear -->
+        <circle cx="92" cy="48" r="16" fill="#333"/>
+        <circle cx="92" cy="48" r="9" fill="#555"/>
+        <!-- Head (tilted slightly) -->
+        <ellipse cx="60" cy="68" rx="40" ry="36" fill="#fff" stroke="#222" stroke-width="2"/>
+        <!-- Eye patches -->
+        <ellipse cx="44" cy="62" rx="12" ry="10" fill="#333"/>
+        <ellipse cx="76" cy="62" rx="12" ry="10" fill="#333"/>
+        <!-- Eyes -->
+        <circle cx="44" cy="63" r="5" fill="#fff"/>
+        <circle cx="76" cy="63" r="5" fill="#fff"/>
+        <circle cx="45" cy="62" r="3" fill="#111"/>
+        <circle cx="77" cy="62" r="3" fill="#111"/>
+        <circle cx="46" cy="61" r="1" fill="#fff"/>
+        <circle cx="78" cy="61" r="1" fill="#fff"/>
+        <!-- Nose -->
+        <ellipse cx="60" cy="77" rx="7" ry="5" fill="#f8a4c0"/>
+        <!-- Mouth (puckered for kiss) -->
+        <circle cx="56" cy="86" r="5" fill="#f8a4c0" opacity="0.8"/>
+        <!-- Blush cheeks -->
+        <ellipse cx="82" cy="80" rx="9" ry="6" fill="#ffb6c1" opacity="0.7"/>
+        <ellipse cx="38" cy="80" rx="9" ry="6" fill="#ffb6c1" opacity="0.5"/>
+        <!-- Bow / ribbon for girl panda -->
+        <path d="M48 36 Q60 28 72 36 Q60 44 48 36Z" fill="#ff6b9d"/>
+        <circle cx="60" cy="37" r="4" fill="#ff3d7f"/>
+        <!-- Arms: left arm reaching toward left panda -->
+        <ellipse cx="25" cy="105" rx="10" ry="24" fill="#fff" stroke="#222" stroke-width="1.5" transform="rotate(30 25 105)"/>
+        <!-- Right arm down -->
+        <ellipse cx="95" cy="105" rx="10" ry="22" fill="#fff" stroke="#222" stroke-width="1.5" transform="rotate(-20 95 105)"/>
+        <!-- Legs -->
+        <ellipse cx="44" cy="148" rx="14" ry="12" fill="#fff" stroke="#222" stroke-width="1.5"/>
+        <ellipse cx="76" cy="148" rx="14" ry="12" fill="#fff" stroke="#222" stroke-width="1.5"/>
+        <!-- Paw pads -->
+        <circle cx="44" cy="150" r="4" fill="#f8a4c0"/>
+        <circle cx="76" cy="150" r="4" fill="#f8a4c0"/>
+      </svg>
+    </div>
+
+    <p class="celebrate-text">Yayyyy! 🎉 She said YES! 💖</p>
+    <p class="celebrate-sub">Taking you to our memories...</p>
+  </div>
+
+  <!-- Floating hearts during celebration -->
+  <div id="celebrate-hearts" class="celebrate-hearts-wrapper"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 2 — GALLERY
+══════════════════════════════════════════════ -->
+<section id="gallery-page" class="page hidden">
+
+  <!-- Background confetti/hearts (gentle) -->
+  <div id="gallery-bg" class="gallery-hearts-bg" aria-hidden="true"></div>
+
+  <!-- Mute / Unmute button -->
+  <button id="mute-btn" class="mute-btn" onclick="toggleMute()" aria-label="Toggle music">
+    🔊
+  </button>
+
+  <!-- Gallery header -->
+  <header class="gallery-header">
+    <h1 class="gallery-title">Our Memories 📸</h1>
+    <p class="gallery-subtitle">Every moment with you ❤️</p>
+  </header>
+
+  <!-- Photo grid -->
+  <main class="gallery-main">
+    <div id="photo-grid" class="photo-grid">
+      <!-- Photos injected here by JS -->
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon">💌</div>
+      <p class="empty-text">Memories coming soon 💌</p>
+      <p class="empty-sub">Our story is just beginning...</p>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="loading-state" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading memories...</p>
+    </div>
+  </main>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     LIGHTBOX (fullscreen photo viewer)
+══════════════════════════════════════════════ -->
+<div id="lightbox" class="lightbox hidden" role="dialog" aria-label="Photo viewer" aria-modal="true">
+  <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <button class="lightbox-prev" onclick="prevPhoto()" aria-label="Previous photo">‹</button>
+  <button class="lightbox-next" onclick="nextPhoto()" aria-label="Next photo">›</button>
+  <div class="lightbox-inner">
+    <img id="lightbox-img" src="" alt="Memory photo" class="lightbox-photo" />
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script src="app.js"></script>
+</body>
+</html>
